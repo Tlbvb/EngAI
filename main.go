@@ -1,29 +1,50 @@
-
 package main
 
 import (
-    "bytes"
-    "encoding/json"
-    "fmt"
-    "io/ioutil"
-    "net/http"
-    "os"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"strings"
 )
 
 func main() {
     apiKey := os.Getenv("OPENAI_API_KEY")
     if apiKey == "" {
-        fmt.Println("API key not set",apiKey)
+        fmt.Println("API key not set")
         return
     }
 
-    url := "https://api.openai.com/v1/audio/translations"
+    // Trim any leading or trailing whitespace from the API key
+    apiKey = strings.TrimSpace(apiKey)
+    fmt.Println("Using API key:", apiKey)
+
+
+    url := "https://api.openai.com/v1/chat/completions"
 
     requestBody, err := json.Marshal(map[string]interface{}{
-        "model": "whisper-1",
-		"prompt": "Once upon a time, in a land far, far away...",
-		"max_tokens": 50,
-	})
+        "model": "gpt-3.5-turbo",
+        "messages": []map[string]string{
+            // {
+            //     "role": "system",
+            //     "content": "You are a helpful assistant.",
+            // },
+            // {
+            //     "role": "user",
+            //     "content": "Who won the world series in 2020?",
+            // },
+            // {
+            //     "role": "assistant",
+            //     "content": "The Los Angeles Dodgers won the World Series in 2020.",
+            // },
+            {
+                "role": "user",
+                "content": "Where was the last UCL final played?",
+            },
+        },
+    })
     if err != nil {
         fmt.Println("Error marshaling request body:", err)
         return
@@ -56,6 +77,12 @@ func main() {
         fmt.Println("Error unmarshaling response:", err)
         return
     }
-	fmt.Println(result)
-    //fmt.Println("Generated Text:", result["choices"].([]interface{})[0].(map[string]interface{})["text"])
+
+    fmt.Println(result)
+    if choices, ok := result["choices"].([]interface{}); ok && len(choices) > 0 {
+        message := choices[0].(map[string]interface{})["message"].(map[string]interface{})["content"].(string)
+        fmt.Println("Generated Message:", message)
+    } else {
+        fmt.Println("No message generated")
+    }
 }
