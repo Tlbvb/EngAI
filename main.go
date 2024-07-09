@@ -16,6 +16,7 @@ func main() {
         fmt.Println("API key not set")
         return
     }
+    fmt.Println("hi all")
 
     // Trim any leading or trailing whitespace from the API key
     apiKey = strings.TrimSpace(apiKey)
